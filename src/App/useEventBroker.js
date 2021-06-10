@@ -1,26 +1,26 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect } from "react";
 /* Aliases */
 export const eventContext = createContext();
 export const useEventContext = () => useContext(eventContext);
 
 export class EventBroker {
     constructor() {
-        this.emitEvent = this.emitEvent.bind(this);
-        this.registerListener = this.registerListener.bind(this);
+        this.emit = this.emit.bind(this);
+        this.on = this.on.bind(this);
     }
     stack = [];
     listeners = {
         __log_stack: [() => console.table(this.stack)]
     };
 
-    emitEvent(type, payload) {
+    emit(type, payload) {
         console.log(arguments);
         const event = { type, payload };
         this.stack.push(event);
-        if (type in this.listeners) this.listeners[type].forEach(fn => fn({ type, payload, emit: this.emitEvent }));
+        if (type in this.listeners) this.listeners[type].forEach(fn => fn({ type, payload, emit: this.emit }));
     }
 
-    registerListener(type, listener) {
+    on(type, listener) {
         /* Sanity check */
         if (typeof type !== "string") return;
         if (typeof listener !== "function") return;
@@ -34,27 +34,20 @@ export class EventBroker {
 }
 
 export function EventProvider({ children }) {
-    const brokerRef = useEventBroker();
-    return <eventContext.Provider value={brokerRef}>{children}</eventContext.Provider>;
+    return <eventContext.Provider value={new EventBroker()}>{children}</eventContext.Provider>;
 }
 
-export function useEventBroker() {
-    const [broker,] = useState(new EventBroker());
-    return broker;
+export function useEmit() {
+    const broker = useEventContext();
+    return broker.emit;
 }
 
-
-export function useListeners(...listeners) {
+export function useOn(type, listener) {
     const broker = useEventContext();
 
     useEffect(function () {
-        listeners.forEach(([type, listener]) => broker.registerListener(type, listener));
+        broker.on(type, listener);
     }, []);
 
     return null;
-}
-
-export function useEventEmitter() {
-    const broker = useEventContext();
-    return broker.emitEvent;
 }

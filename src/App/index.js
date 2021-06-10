@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { EventProvider, useListeners, useEventEmitter } from "./useEventBroker";
+import { EventProvider, useOn, useEmit } from "./useEventBroker";
 
 export default function App() {
     return (
@@ -14,19 +14,16 @@ export default function App() {
 export function BlogPost({ number = 1 }) {
     const [pageNum, setPageNum] = useState(number);
     const [content, setContent] = useState(null);
-    const emit = useEventEmitter();
+    const emit = useEmit();
 
-    useListeners(
-        ['post/init', ({ emit, payload = 1 }) => fetch('https://jsonplaceholder.typicode.com/posts/' + payload)
-            .then(response => response.json())
-            .then(json => emit('post/done', json))
-            .catch(error => emit('post/error', error))
-        ],
-        ['post/done', ({ payload }) => setContent(payload)],
-        ['post/error', ({ payload }) => console.error(payload)],
-        ['post/changePage', ({ payload }) => setPageNum(payload)],
-
+    useOn('post/init', ({ emit, payload = 1 }) => fetch('https://jsonplaceholder.typicode.com/posts/' + payload)
+        .then(response => response.json())
+        .then(json => emit('post/done', json))
+        .catch(error => emit('post/error', error))
     );
+    useOn('post/done', ({ payload }) => setContent(payload));
+    useOn('post/error', ({ payload }) => console.error(payload));
+    useOn('post/changePage', ({ payload }) => setPageNum(payload));
 
     useEffect(() => {
         emit('post/init', pageNum);
@@ -41,7 +38,7 @@ export function BlogPost({ number = 1 }) {
 
 export function Pagination() {
     const [page, setPage] = useState(1);
-    const emit = useEventEmitter();
+    const emit = useEmit();
 
     const next = () => setPage(p => p + 1);
     const previous = () => setPage(p => p > 0 ? p - 1 : 0);
@@ -56,13 +53,12 @@ export function Pagination() {
         <button onClick={next}>Dopo</button>
     </div>
 }
+
 export function History() {
     const [log, setLog] = useState([]);
     const addVisitedPost = (title) => setLog(p => [...p, title]);
 
-    useListeners(
-        ['post/done', ({ payload: { title } }) => addVisitedPost(title)]
-    )
+    useOn('post/done', ({ payload: { title } }) => addVisitedPost(title))
 
     return (
         <ul>{log.map((postTitle, index) => <li key={index}>{postTitle}</li>)}</ul>

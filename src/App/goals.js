@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { EventProvider, useListeners, useEventEmitter } from "./useEventBroker";
+import { EventProvider, useOn, useEmit } from "./useEventBroker";
 
 export default function App() {
     return (
@@ -19,9 +19,7 @@ export default function App() {
 export function Goal({ squadra }) {
     const [punteggio, setPunteggio] = useState(0);
 
-    useListeners(
-        [`goal squadra ${squadra}`, () => setPunteggio(p => p + 1)]
-    );
+    useOn(`goal squadra ${squadra}`, () => setPunteggio(p => p + 1));
 
     return (
         <em className="mr3">Punteggio squadra {squadra}: {punteggio}</em>
@@ -29,7 +27,7 @@ export function Goal({ squadra }) {
 }
 
 export function ComponenteB({ squadra }) {
-    const emit = useEventEmitter();
+    const emit = useEmit();
 
     return (
         <button onClick={e => emit(`goal squadra ${squadra}`)}>Fai goal</button>
@@ -37,7 +35,7 @@ export function ComponenteB({ squadra }) {
 }
 
 export function ComponenteC() {
-    const emit = useEventEmitter();
+    const emit = useEmit();
 
     return (
         <button onClick={e => emit(`__log_stack`)}>Log</button>
