@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { EventProvider, useOn, useEmit } from "./useEventBroker";
+import { EventProvider, useOn, useEmit } from "./useEventBus";
 
 export default function App() {
     return (

@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
-import { EventProvider, useOn, useEmit } from "./useEventBroker";
+import { EventProvider, useOn, useEmit } from "./useEventBus";
 
 export default function App() {
+    const [showLog, setShowLog] = useState(false);
     return (
         <EventProvider>
             <BlogPost />
             <Pagination />
-            <History />
+            <hr />
+            <button onClick={() => setShowLog(p => !p)}>mostra log</button>
+            {showLog && <History />}
         </EventProvider>
     );
 }
@@ -38,6 +41,7 @@ export function BlogPost({ number = 1 }) {
 
 export function Pagination() {
     const [page, setPage] = useState(1);
+
     const emit = useEmit();
 
     const next = () => setPage(p => p + 1);
