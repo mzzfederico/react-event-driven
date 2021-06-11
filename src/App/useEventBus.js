@@ -55,10 +55,8 @@ export class EventBus {
     }
 }
 
-const __init_bus = new EventBus();
-
 export function EventProvider({ children }) {
-    const [bus,] = useState(__init_bus);
+    const [bus,] = useState(new EventBus());
 
     return <eventContext.Provider value={bus}>{children}</eventContext.Provider>;
 }
